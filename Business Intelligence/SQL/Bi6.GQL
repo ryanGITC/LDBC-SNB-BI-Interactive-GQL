@@ -1,0 +1,35 @@
+// detail_VIEW
+SELECT CreatorPerson.id AS CreatorPersonId
+     , count(DISTINCT Comment.Id)  AS replyCount
+     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
+     , count(DISTINCT Message.Id)  AS messageCount
+     , NULL as score
+FROM LDBC_SNB
+    MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
+    OPTIONAL MATCH (message)<-[likes:LIKES]-(:Person)
+    OPTIONAL MATCH (message)<-[:REPLY_OF]-(reply:Comment)
+GROUP BY CreatorPerson.id
+
+//poster_w_liker_VIEW
+SELECT DISTINCT  m1.CreatorPersonId AS posterPersonid
+         ,l2.PersonId AS likerPersonid
+FROM detail_VIEW,LDBC_SNB
+     MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message1:Message)-[:HAS_CREATOR]->(person1:Person)
+     OPTIONAL MATCH (message1)<-[:LIKES]-(person2:Person)
+     
+//popularity_score_VIEW 
+SELECT  CreatorPersonId AS PersonId, count(*) AS popularityScore
+FROM Message m3
+     OPTIONAL MATCH (person2)<-[:HAS_CREATOR]-(message2:Message)<-[like:LIKES]-(person3:Person)
+GROUP BY m3.CreatorPersonId
+
+//final query
+SELECT  pl.posterPersonid AS "person1.id"
+       ,sum(COALESCE(ps.popularityScore, 0)) AS authorityScore
+FROM poster_w_liker_VIEW
+MATCH (pl: likerPersonid) <- [:POPULARITY_SCORE] (ps:Person)
+
+ GROUP BY pl.posterPersonid
+ ORDER BY authorityScore DESC, pl.posterPersonid ASC
+ LIMIT 100
+;

@@ -1,0 +1,37 @@
+
+Create Query as ForumMembershipPerCountry_VIEW (
+FROM LDBC_SNB
+MATCH (country:Country)<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(person:Person)<-[:HAS_MEMBER]-(forum:Forum)
+Return Forum.id AS ForumId
+     , count(Person.id) AS numberOfMembers
+     , Country.id AS CountryId
+     ,  DISTINCT forum AS topForum1
+ GROUP BY Country.Id, Forum.Id
+)
+
+Create Query as  Top100_Popular_Forums_VIEW(
+FROM ForumMembershipPerCountry_VIEW,LDBC_SNB
+MATCH (person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
+OPTIONAL MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person)
+WHERE topForum2 IN topForums
+RETURN DISTINCT ForumId AS id
+        ,max(numberOfMembers) AS maxNumberOfMembers
+        person, message, topForum2
+  GROUP BY ForumId
+
+  ORDER BY maxNumberOfMembers DESC
+          ,ForumId
+  LIMIT 100
+)
+
+FROM Top100_Popular_Forums_VIEW,ForumMembershipPerCountry_VIEW
+MATCH ()
+ RETURN person.id AS personId,
+  person.firstName AS personFirstName,
+  person.lastName AS personLastName,
+  person.creationDate AS personCreationDate,
+  count(DISTINCT message) AS messageCount
+ORDER BY
+  messageCount DESC,
+  person.id ASC
+LIMIT 100
