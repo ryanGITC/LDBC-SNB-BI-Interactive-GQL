@@ -1,0 +1,28 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+
+SELECT CreatorPerson.id AS person.id
+     , count(DISTINCT Comment.Id)  AS replyCount
+     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
+     , count(DISTINCT Message.Id)  AS messageCount
+     ,1*messageCount + 2*replyCount + 10*likeCount AS score
+FROM LDBC_SNB
+      MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(p:Person)
+      OPTIONAL MATCH (message)<-[likes:LIKES]-(:Person)
+      OPTIONAL MATCH (message)<-[:REPLY_OF]-(reply:Comment)
+ GROUP BY CreatorPerson.id
+ ORDER BY score DESC, CreatorPersonId
+ LIMIT 100
+\end{minted}
+\caption{final query}
+\label{5-1}
+\end{listing}

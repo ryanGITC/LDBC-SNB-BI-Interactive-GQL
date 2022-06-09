@@ -1,0 +1,37 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+FROM  LDBC_SNB
+OPTIONAL MATCH (person: person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF]{0,..}->(post:Post)
+WHERE message.content IS NOT NULL
+  AND message.length < 20
+  AND message.creationDate > $startDate
+  AND post.language IN   ['ar', 'hu']
+RETURN
+  messageCount,
+  count(person) AS personCount
+ORDER BY
+  personCount DESC,
+  messageCount DESC
+
+    
+\end{minted}
+\caption{Final Query}
+\label{12}
+\end{listing}
+
+
+From the person node, there is an incoming left traversal from the message node, which travels through 
+  the \texttt{HAS\_CREATOR} path. Another traversal is present,  which travels toward the post node, of which at least 0 paths are traversed through the 
+  \texttt{REPLY\_OF} path.The WHERE clause described the conditons for the retrieved results.
+  The variables returned by the query are described in table \ref{}
+
+  

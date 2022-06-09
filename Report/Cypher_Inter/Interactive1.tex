@@ -1,0 +1,122 @@
+\subsubsection{Interactive Complex 1}
+Since GQL does not yet support accumulators the query is constructed by first creating small views that return the results. Each consequent view
+is a follow-up of the previous.In
+\texttt{Query\_friend\_VIEW1}
+ the query first accumulates all the person's first names and last names, the 
+friends of each other. Then the person's ID and that friend are returned
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+CREATE QUERY friend_VIEW1  AS ( 
+FROM LDBC_SNB
+MATCH (p:Person {id: $personId}) ~[:friend] ~ (Person {firstName: $firstName})
+RETURN p 
+      ,friend
+)
+
+\end{minted}
+
+In the second view \texttt{friend\_VIEW2}  the query first retrieves the shorted path between person and friend, of which the path can be 
+between 1 and 3 , indicated by {1,3}. After that the minimal length is returned from that traversed path and the friend as second result.
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+CREATE QUERY  friend_VIEW2 AS (
+FROM LDBC_SNB, friend_VIEW1
+MATCH path = shortestPath((p)-[:KNOWS]-(f:friend)) {1,3}
+WHERE p.id == friend_VIEW1.p.id
+Return min(length(path)) AS distance
+       , f
+ORDER BY
+    distance ASC,
+    f.lastName ASC,
+    toInteger(f.id) ASC
+LIMIT 20
+\end{minted}
+In the following query the use of  \texttt{friend\_VIEW2} is used, since the distance result is required from the previous views.
+At first the query looks in which city each friend is located. In the second match (optional match), the
+the city in which each friend or person studies is retrieved.
+The returned results are the uni name provided a value of T if the university name is missing or else the name, class year 
+city, and the distance value.
+
+\begin{minted}[hbt!]
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+CREATE QUERY friend_VIEW3 as (
+MATCH (f:friend)-[:IS_LOCATED_IN]
+       ->(friendCity:City)
+OPTIONAL MATCH (friend)-[studyAt:STUDY_AT]
+            ->(uni:University)-[:IS_LOCATED_IN]->(uniCity:City)
+CASE uni.name
+        WHEN null T
+        THEN null
+        ELSE [uni.name, studyAt.classYear, uniCity.name]
+ END ) AS 
+WHERE f.id == friend_VIEW1.f.id
+ Return  unis
+        ,friendCity
+        ,distance
+)
+\end{minted}
+
+The query below is the last query without a view. I In there the company information at where that friend work 
+is obtained by first traversing the path between friend and works at the company and afterwards the path between 
+company and the country at which the company is located.After path traversal he company name is returned (if not null), university information of \textt{friend\_VIEW3}, and the distance.
+Furthermore all remaining results of the views are returned.
+
+\begin{minted}
+[
+frame=lines,
+framesep=5mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+FROM friend_VIEW1,friend_VIEW2,friend_VIEW3
+OPTIONAL MATCH (f:friend)-[workAt:WORK_AT]->(company:Company)-[:IS_LOCATED_IN]
+           ->(companyCountry:Country)
+CASE company.name
+        WHEN null THEN null
+        ELSE [company.name, workAt.workFrom, companyCountry.name]
+END ) AS companies
+WHERE f.id = friend_VIEW1.id 
+Return
+        p.id AS friendId,
+        f.lastName AS friendLastName,
+        distance   AS distanceFromPerson,
+        p.birthday AS friendBirthday,
+        p.creationDate AS friendCreationDate,
+        p.gender AS friendGender,
+        p.browserUsed AS friendBrowserUsed,
+        p.locationIp AS friendLocationIp,
+        p.email AS friendEmails,
+        p.speaks AS friendSpeaks,
+        friendCityName AS friendCityName,
+        companies AS friendCompanies,
+        universities as friendUniversities
+\end{minted}
+

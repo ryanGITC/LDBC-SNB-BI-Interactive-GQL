@@ -1,0 +1,35 @@
+\subsubsection{Interactive Complex 7}
+
+For the query above,  there is no view necessary since it consists of one query. There are two match clauses.
+In the first match clause, a left traversal is done from comment to messageId, and also a right traversal to the node person along with the edge label \texttt{HAS\_CREATOR}. In the second match, which is an optional MATCH, a right 
+traversal is carried out from the message node to the person, and then another right traversal to the person
+node along the path \texttt{HAS\_CREATOR}. From the node person, there is another traversal to the node person. This seems confusing, but the query verifies whether a reply is given from person A to person B. In addition, a verification is done to see whether two people know each other.
+
+
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+FROM LDBC_SNB
+MATCH (m:Message {id: $messageId })<-[:REPLY_OF]-(c:Comment)-
+      [:HAS_CREATOR]->(p:Person)
+OPTIONAL MATCH (m)-[:HAS_CREATOR]->(a:Person)-[r:KNOWS]-(p)
+RETURN c.id AS commentId,
+        c.content AS Content,
+        c.creationDate AS CreationDate,
+        p.id AS AuthorId,
+        p.firstName AS replyFirstName,
+        p.lastName AS replyLastName,
+        CASE r
+            WHEN null THEN false
+            ELSE true
+       END AS KnowsOriginalMessageAuthor
+ORDER BY creationDate DESC
+         ,AuthorId
+\end{minted}

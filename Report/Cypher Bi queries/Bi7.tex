@@ -1,0 +1,43 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+/*Translation Bi7 query*/
+FROM LDBC_SNB
+MATCH
+  (tag:Tag {name: $tag})<-[:HAS_TAG]-(m:Message),
+  (m)<-[:REPLY_OF]-(c:Comment)-[:HAS_TAG]->(rTag:Tag)
+    WHERE NOT (c)-[:HAS_TAG]->(tag)
+
+RETURN RelatedTag.name AS "relatedTag.name"
+       , count(*) AS count
+ GROUP BY RelatedTag.name
+ ORDER BY count DESC
+          ,RelatedTag.name
+ LIMIT 100
+\end{minted}
+\caption{final query}
+\label{7-1}
+\end{listing}
+ The query above traverses from the message node towards the tag node. This traversal happens through the 
+ \texttt{HAS\_TAG} label. A second traversal is present in the MATCH clause, which consists of a left path traversal
+ and a right path traversal, unlike the previous traversal that is only a left path traversal. The first right path traversal is from the comment node and travels through the \texttt{HAS\_TAG} path towards the
+ Tag node, while the left path traversal goes from the comment node towards the message node.\texttt{REPLY\_OF} is the path through which the left path traversal happens.
+ 
+ \begin{table}[]
+\begin{tabular}{|l|l|lll}
+\cline{1-2}
+\textbf{Variables} & \textbf{Meaning}                            &  &  &  \\ \cline{1-2}
+relatedTag.name    & the name of the tag                         &  &  &  \\ \cline{1-2}
+count              & count of the messages related to the tag ID &  &  &  \\ \cline{1-2}
+\end{tabular}
+\label{Variables and their meaning}
+\label{RetCypher6BITable}
+\end{table}

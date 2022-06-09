@@ -1,0 +1,58 @@
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+FROM LDBC_SNB
+MATCH
+  (:Country {country: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-
+  (person:Person)<-[:HAS_MODERATOR]-(f:FORUM)-[:CONTAINER_OF]->
+  (post:Post)<-[:REPLY_OF]{0,...}-(message:Message)-[:HAS_TAG]->(:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass})
+RETURN 
+f.id            AS "f.id"
+f.title         AS "f.title"
+f.creationDate   AS "f.creationDate"
+f.ModeratorPersonId AS "person.id"
+ count(DISTINCT MessageThread.MessageId) AS messageCount
+GROUP BY f.id
+        ,f.title
+        ,f.creationDate
+        ,f.ModeratorPersonId
+ ORDER BY messageCount DESC, 
+          f.id
+ LIMIT 20
+\end{minted}
+\caption{final query}
+\label{3-1}
+\end{listing}
+The creation of a view is omitted in \ref{3-1}.In the MATCH clause there first is a left traversal from the 
+ forum node towards the person node. This traversal is done along the path \texttt{HAS\_MODERATOR}, and a second traversal starts after that, along the path
+ \texttt{IS\_LOCATED\_IN}. The second traversal is from the person node towards the city node, and another left traversal is executed 
+ from the city node towards the country node. After those left traversals, there are also two right traversals and an undirected one.
+ The first right traversal is from the forum node towards the post node and traverses through the path of 
+ \texttt{CONTAINER\_OF}.Along the path of \texttt{HAS\_TAG}, the second right traversal is done from the message node towards the tag node and the third towards the TagClass. \texttt{HAS\_TYPE} is the path along which the third traversal is executed.
+ Do note that there is another left traversal present from the message node to the post node that happens along the path \texttt{REPLY\_OF}. The path traversal on the path is done at least zero or more times 
+ 
+ The variables returned by the final query 
+ 
+ \begin{table}[!ht]
+\begin{tabular}{lllll}
+\cline{1-2}
+\multicolumn{1}{|l|}{\textbf{Variables name}} & \multicolumn{1}{l|}{\textbf{Meaning}}                          &  &  &  \\ \cline{1-2}
+\multicolumn{1}{|l|}{f.id}                    & \multicolumn{1}{l|}{id of the forum}                           &  &  &  \\ \cline{1-2}
+\multicolumn{1}{|l|}{,f.title}                & \multicolumn{1}{l|}{title of the forum}                        &  &  &  \\ \cline{1-2}
+\multicolumn{1}{|l|}{,f.creationDate}         & \multicolumn{1}{l|}{the date of the when the forum is created} &  &  &  \\ \cline{1-2}
+\multicolumn{1}{|l|}{,f.ModeratorPersonId}    & \multicolumn{1}{l|}{the id of the person who is the moderator} &  &  &  \\ \cline{1-2}
+                                              &                                                                &  &  &  \\
+                                              &                                                                &  &  & 
+\end{tabular}
+\caption{Returned variables and their meaning}
+\label{RetCypher3BITable}
+\end{table}

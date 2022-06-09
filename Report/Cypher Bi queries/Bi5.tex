@@ -1,0 +1,49 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+
+FROM LDBC_SNB
+MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(p:Person)
+OPTIONAL MATCH (message)<-[likes:LIKES]-(:Person)
+OPTIONAL MATCH (message)<-[:REPLY_OF]-(reply:Comment)
+REUTRN CreatorPerson.id AS person.id
+     , count(DISTINCT Comment.Id)  AS replyCount
+     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
+     , count(DISTINCT Message.Id)  AS messageCount
+     ,1*messageCount + 2*replyCount + 10*likeCount AS score
+
+ GROUP BY CreatorPerson.id
+ ORDER BY score DESC, CreatorPersonId
+ LIMIT 100
+
+\end{minted}
+\caption{final query}
+\label{5-1}
+\end{listing}
+
+
+In \ref{5-1} the query has two optional MATCH clauses and one MATCH clause.
+In the MATCH clause, there is a left, and right.
+the left path traversal starts from the message node towards the tag node, and traverses through the path with  label named \texttt{HAS\_TAG}, while the right path traversal happens through the \texttt{HAS\_CREATOR} label. The label comes from the  message node and goes toward the person node
+At last, the query returns the  variables described in table \ref{RetCypher5BITable}
+
+\begin{table}[!ht]
+\begin{tabular}{|l|l|lll}
+\cline{1-2}
+person.id    & the id of the person                                                                                                &  &  &  \\ \cline{1-2}
+replyCount   & the amount of times there is replied on a message                                                                   &  &  &  \\ \cline{1-2}
+likeCount    & count of likes                                                                                                      &  &  &  \\ \cline{1-2}
+messageCount & the amount of distinct messages                                                                                     &  &  &  \\ \cline{1-2}
+score        & the score of the message dependant on the count of likes, the amount of times a reply is done and the message count &  &  &  \\ \cline{1-2}
+\end{tabular}
+\caption{Returned variables and their meaning}
+\label{RetCypher5BITable}
+\end{table}

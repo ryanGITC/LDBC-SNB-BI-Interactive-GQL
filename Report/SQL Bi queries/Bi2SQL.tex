@@ -1,0 +1,66 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=1mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+
+SELECT count(message1) AS countWindow1
+FROM LDBC_SNB
+     OPTIONAL MATCH (message1:Message)-[:HAS_TAG]->(tag)
+WHERE $date <= message1.creationDate
+AND message1.creationDate < $date + duration({days: 100})
+\end{minted}
+\caption{tag view 1}
+\label{1-2s}
+\end{listing}
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=1mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+SELECT count(DISTINCT CASE WHEN Message.creationDate >= :date + INTERVAL '100 days' THEN Message.id ELSE NULL END) AS countMonth2
+FROM LDBC_SNB
+     OPTIONAL MATCH (message2:Message)-[:HAS_TAG]->(tag)
+WHERE $date + duration({days: 100}) <= message2.creationDate
+AND message2.creationDate < $date + duration({days: 200})
+\end{minted}
+\caption{tag view 2}
+\label{1-2s}
+\end{listing}
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=1mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+SELECT  tag.name,countWindow1,countWindow2,abs(countWindow1 - countWindow2) AS diff
+FROM TAG1_VIEW,TAG2_VIEW,LDBC
+    MATCH (tag:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass})
+ORDER BY diff desc,
+         tag.name ASC
+LIMIT 100
+
+\end{minted}
+\caption{final query}
+\label{22-s}
+\end{listing}
+

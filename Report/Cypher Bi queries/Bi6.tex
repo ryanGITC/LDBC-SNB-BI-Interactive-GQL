@@ -1,0 +1,128 @@
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+CREATE QUERY detail_VIEW as (
+FROM LDBC_SNB
+MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
+OPTIONAL MATCH [:REPLY_OF]-(reply:Comment)->(message)<-[likes:LIKES]-(:Person)
+REUTRN CreatorPerson.id AS CreatorPersonId
+     , count(DISTINCT Comment.Id)  AS replyCount
+     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
+     , count(DISTINCT Message.Id)  AS messageCount
+     , NULL as score
+GROUP BY CreatorPerson.id
+)
+\end{minted}
+\caption{detail view}
+\label{6-1}
+\end{listing}
+
+In \ref{6-1} the left traversal goes through the label \texttt{HAS\_TAG}and from the message node towards the tag node.
+Also, from the message node, there is another right path traversal towards the person node, which happens along 
+the path \texttt{HAS\_CREATOR}. Both traversals happen within the MATCH CLAUSE.
+The other match clause, which is an OPTIONAL MATCH has the 
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+Create Query poster_w_liker_VIEW AS(
+FROM detail_VIEW,LDBC_SNB
+MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message1:Message)-[:HAS_CREATOR]->(person1:Person)
+OPTIONAL MATCH (message1)<-[:LIKES]-(person2:Person)
+RETURN    DISTINCT   m1.CreatorPersonId AS posterPersonid
+         ,l2.PersonId AS likerPersonid
+)
+
+\end{minted}
+\caption{poster liker view}
+\label{6-2}
+\end{listing}
+
+The \texttt{poster\_w\_liker\_VIEW} has a left traversal through the path \texttt{HAS\_TAG}, which comes from the message node towards
+the tag node. From the message node towards the person node, there is a right path traversal that travels through
+the \texttt{HAS\_CREATOR} node.
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+
+CREATE QUERY popularity_score_VIEW AS (
+FROM LDBC_SNB,poster_w_liker_VIEW
+OPTIONAL MATCH (person2)<-[:HAS_CREATOR]-(message2:Message)<-[like:LIKES]-(person3:Person)
+RETURN  CreatorPersonId AS PersonId
+        ,count(*) AS popularityScore
+GROUP BY m3.CreatorPersonId
+)
+\end{minted}
+\caption{Popularity score}
+\label{6-3}
+\end{listing}
+
+The \texttt{popularity\_score} view has two left path traversals. The first starts from the person node and travels through
+the LIKES label towards the message node (from \ref{6-1}). From that message node, the second traversal is done from the
+message node towards the person node of \ref{6-}. That traversal is done through the  \texttt{HAS\_CREATOR} label.
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+
+/*Final Query*/
+FROM poster_w_liker_VIEW,popularity_score_VIEW,Query poster_w_liker_VIEW ,detail_VIEW
+MATCH (pl: likerPersonid) <- [:POPULARITY_SCORE]-(ps:Person)
+RETURN  pl.posterPersonid AS "person1.id"
+     , sum(coalesce(ps.popularityScore, 0)) AS authorityScore
+ GROUP BY pl.posterPersonid
+ ORDER BY authorityScore DESC, pl.posterPersonid ASC
+ LIMIT 100
+;
+\end{minted}
+\caption{final query}
+\label{6-3}
+\end{listing}
+The final query also has a MATCH CLAUSE. This clause does a left path traversal from the person node towards the 
+likerPersonid, and travels along the path named \texttt{POPULARITY\_SCORE}. The variables returned from the final query are described 
+in table \ref{RetCypher6BITable}
+\begin{table}[!ht]
+\begin{tabular}{|l|l|lll}
+\cline{1-2}
+\textbf{Variables}      & \textbf{Meaning}                                                                             &  &  &  \\ \cline{1-2}
+person1.id     & the id of the person                                                                &  &  &  \\ \cline{1-2}
+authorityScore & sum of the popularity score retrieved from the traversal in the last queryn  &  &  &  \\ \cline{1-2}
+                                                                   
+\end{tabular}
+\caption{Returned variables and their meaning}
+\label{RetCypher6BITable}
+\end{table}

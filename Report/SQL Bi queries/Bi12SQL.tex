@@ -1,0 +1,29 @@
+ \include{SQL Bi queries/Bi12SQL}
+ \begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+ SELECT messageCount,
+        count(person) AS personCount
+  FROM  LDBC_SNB
+        OPTIONAL MATCH (person: person)<-[:HAS_CREATOR]-(message:Message)
+                      -[:REPLY_OF]{0,..}->(post:Post)
+  WHERE message.content IS NOT NULL
+    AND message.length < 20
+    AND message.creationDate > $startDate
+    AND post.language IN   ['ar', 'hu']
+  ORDER BY
+    personCount DESC,
+    messageCount DESC
+    
+\end{minted}
+\caption{final query}
+\label{12SQL-1}
+\end{listing}

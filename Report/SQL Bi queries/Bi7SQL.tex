@@ -1,0 +1,26 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+SELECT RelatedTag.name AS "relatedTag.name",count(*) AS count
+FROM LDBC_SNB
+     MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(m:Message),
+           (m)<-[:REPLY_OF]-(c:Comment)-[:HAS_TAG]->(rTag:Tag)
+           
+            WHERE NOT (c)-[:HAS_TAG]->(tag)
+
+GROUP BY RelatedTag.name
+ORDER BY count DESC
+          ,RelatedTag.name
+LIMIT 100
+\end{minted}
+\caption{final query}
+\label{7-1}
+\end{listing}

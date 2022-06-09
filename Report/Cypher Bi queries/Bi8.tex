@@ -1,0 +1,91 @@
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+/*Translation Bi8 query*/
+
+CREATE Query Person_VIEW as (
+FROM  Person
+MATCH (tag:Tag {name: $tag})
+// score
+MATCH (tag)<-[interest:HAS_INTEREST]-(person:Person)
+tag, collect(person) AS interestedPersons
+WHERE EXIST{ 
+    MATCH (tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
+}
+RETURN DISTINCT tag
+       ,DISTINCT(interestedPersons + COLLECT (person) )AS persons
+)
+
+\end{minted}
+\caption{Person view}
+\label{8-1}
+\end{listing}
+
+The \ref{8-1} is composed with a WHERE EXIST CLAUSE.
+In there the query starts with a left path traversal from
+the message node towards the tag node, traversing through the path named \texttt{HAS\_TAG}. The other path \texttt{HAS\_CREATOR}
+has a right traversal from the message node towards the person node. The inner clause is a condition, therefore the outer MATCH
+clause first gets executed. In that clause, the person node is selected and from there on a traversal is done towards 
+the tag node through the \texttt{HAS\_INTEREST} label.
+
+
+\begin{listing}[!ht]
+\begin{minted}
+[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=LightGray,
+fontsize=\footnotesize,
+linenos
+]
+{cypher}
+FROM Person_VIEW
+ MATCH (person)-[:KNOWS]-(friend)
+// We need to use a redundant computation due to the lack of composable graph queries in the currently supported Cypher version.
+// This might change in the future with new Cypher versions and GQL.
+RETURN 
+ tag,
+  person,
+  100 * size([(tag)<-[interest:HAS_INTEREST]-(person) | interest]) + size([(tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person) WHERE message.creationDate > $date | message])
+  AS score
+  ,sum(score) AS friendScore
+
+ORDER BY
+  score + friendsScore DESC,
+  person.id ASC
+LIMIT 100
+
+\end{minted}
+\caption{Final query}
+\label{8-2}
+\end{listing}
+
+The last query retrieves the results from the \texttt{person\_VIEW}. This however, might be redundant ,and could be constructed in one
+query. But the current version of GQL described in the available resources does not mention composable graph queries.
+As a result, a second query is constructed as  the final query. In it we have a traversal from the friend node
+towards the person node. This traversal is a LUR and happens through the KNOWS path. As a final step the variables
+described in table \ref{RetCypher8BITable} are returned.
+
+
+
+\begin{table}[!ht]
+\begin{tabular}{lllll}
+\cline{1-2}
+\multicolumn{1}{|l|}{\textbf{Variables}}                                                                                                                                                                                                                                       & \multicolumn{1}{l|}{\textbf{Meaning}}    &  &  &  \\ \cline{1-2}
+\multicolumn{1}{|l|}{tag,}                                                                                                                                                                                                                                                     & \multicolumn{1}{l|}{the name of the tag} &  &  &  \\ \cline{1-2}
+\multicolumn{1}{|l|}{100 * size({[}(tag)\textless{}-{[}interest:HAS\_INTEREST{]}-(person) | interest{]}) + size({[}(tag)\textless{}-{[}:HAS\_TAG{]}-(message:Message)-{[}:HAS\_CREATOR{]}-\textgreater{}(person) WHERE message.creationDate \textgreater \$date | message{]})} & \multicolumn{1}{l|}{}                    &  &  &  \\ \cline{1-2}
+                                                                                                                                                                                                                                                                               &                                          &  &  &  \\
+                                                                                                                                                                                                                                                                               &                                          &  &  & 
+\end{tabular}
+\caption{Returned variables and their meaning}
+\label{RetCypher8BITable}
+\end{table}
