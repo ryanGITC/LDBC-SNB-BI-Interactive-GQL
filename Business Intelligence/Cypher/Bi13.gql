@@ -1,0 +1,48 @@
+CREATE QUERY Located_VIEW as (
+FROM LDBC_SNB
+MATCH (country:Country {name: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(:Person)
+WHERE person.creationDate < $endDate
+RETURN country
+       ,person
+_)
+
+
+CREATE QUERY HAS_CREATOR_VIEW as (
+OPTIONAL MATCH (person)<-[:HAS_CREATOR]-(message:Message)
+WHERE message.creationDate < $endDate
+    AND  messageCount / months < 1
+RETURN  country
+       ,person
+       ,count(message) AS messageCount
+
+)
+
+CREATE QUERY LikerPerson_VIEW as (
+OPTIONAL MATCH
+  (person)<-[:HAS_CREATOR]-(message:Message)<-[:LIKES]-(likerperson:Person)
+WHERE likerperson IN persons
+RETURN country,
+       COLLECT (person) AS persons
+         12 * ($endDate.year  - person.creationDate.year )
+     + ($endDate.month - person.creationDate.month)
+     + 1 AS months
+     ,messageCount
+)
+
+FROM LDBC_SNB,LikerPerson_VIEW,HAS_CREATOR_VIEW,Located_VIEW
+OPTIONAL MATCH
+  (person)<-[:HAS_CREATOR]-(message:Message)<-[:LIKES]-(likerPerson:Person)
+WHERE likerPerson.creationDate < $endDate
+
+RETURN person.id
+       ,count(likerperson) AS personLikeCount
+       ,totalLikeCount
+  CASE totalLikeCount
+    WHEN 0 THEN 0.0
+    ELSE personLikeCount / toFloat(totalLikeCount)
+  END AS personScore
+ORDER BY
+  personScore DESC,
+  person.id ASC
+LIMIT 100
+

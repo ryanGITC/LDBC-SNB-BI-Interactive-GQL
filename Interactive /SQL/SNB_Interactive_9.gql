@@ -1,0 +1,18 @@
+
+ //Query friends_VIEW 
+SELECT  COLLECT (distinct f) as friends
+FROM LDBC_SNB
+MATCH (p1:Person {id: $personId })-[:KNOWS]-(p2:Person){1,2}
+WHERE f<>p1
+
+
+SELECT  f.id AS personId,f.firstName AS FirstName,f.lastName AS LastName, m.id AS commentId,
+        coalesce(m.content,m.imageFile) AS Content,
+        m.creationDate AS contentCreationDate
+FROM friends_VIEW
+    MATCH (f) <-[:HAS_CREATOR]-(m:Message)
+    WHERE m.creationDate < $maxDate
+ORDER BY
+    contentCreationDate DESC,
+    message.id ASC
+LIMIT 20

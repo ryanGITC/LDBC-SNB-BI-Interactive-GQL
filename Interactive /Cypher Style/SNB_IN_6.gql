@@ -1,0 +1,28 @@
+// Q6. Tag co-occurrence
+Create Query tag_VIEW AS (
+FROM LDBC_SNB
+MATCH (knowTag:Tag { name: $tagName })
+RETURN knowTag.id as knownTagId
+)
+
+CREATE Query knowTag_VIEW as (
+FROM tag_VIEW
+MATCH (p:Person { id: $personId })-[:KNOWS]-(f: friend){1,2}
+WHERE  p<>f AND tag_VIEW.knownTagId == knownTagId
+RETURN
+    knownTagId,
+    (distinct f) as friends
+)
+
+FROM tag_VIEW, knowTag_VIEW
+MATCH (f)<-[:HAS_CREATOR]-(post:Post),
+        (post)-[:HAS_TAG]->(t1:Tag{id: knownTagId}),
+        (post)-[:HAS_TAG]->(t2:Tag)
+    WHERE  t1 <> t2      
+RETURN
+   t.name as nametag,
+ count(post) as countPost
+ORDER BY
+    nametag DESC,
+    countPost ASC
+LIMIT 10

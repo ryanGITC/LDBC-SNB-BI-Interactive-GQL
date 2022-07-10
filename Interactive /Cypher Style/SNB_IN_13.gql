@@ -1,0 +1,10 @@
+
+FROM LDBC_SNB
+MATCH(p1:Person {id: $person1Id}),(p2:Person {id: $person2Id}),
+    PATH = shortest((p1)-[:KNOWS]-(p2)){*}
+RETURN
+    CASE path IS NULL
+        WHEN true THEN -1
+        ELSE length(path)
+    END AS shortestPathLength
+

@@ -1,0 +1,25 @@
+
+// QUERY know_VIEW 
+SELECT  DISTINCT f
+MATCH (p:Person { id: $personId })-[:KNOWS]-(f: friend) {1,2}
+WHERE
+     person <> f
+
+// QUERY forum_VIEW  
+SELECT forum, COLLECT(f) AS friends
+FROM know_VIEW
+MATCH (f)<-[m:HAS_MEMBER]-(forum)
+WHERE
+    m.joinDate > $minDate
+AND know_VIEW.f.id == f.id
+
+//final Query
+SELECT f.id as person, forum.title AS nameForum, count(post) AS countPost
+FROM know_VIEW,forum_VIEW
+OPTIONAL MATCH (f)<-[:HAS_CREATOR]-(post)<-[:CONTAINER_OF]-(forum)
+WHERE
+    f IN friends
+ORDER BY
+    postCount DESC,
+    forum.id ASC
+LIMIT 20

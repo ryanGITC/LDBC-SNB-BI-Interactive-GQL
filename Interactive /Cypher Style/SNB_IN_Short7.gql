@@ -1,0 +1,20 @@
+// IS7. Replies of a message
+FROM LDBC_SNBI
+MATCH (m:Message {id: $messageId })<-[:REPLY_OF]-(c:Comment)-[:HAS_CREATOR]->(p:Person)
+OPTIONAL MATCH (m)-[:HAS_CREATOR]->(p2:Person)-[r:KNOWS]-(p1)
+RETURN c.id AS commentId,
+       c.content AS content,
+       c.creationDate AS creationDate,
+       p.id AS AuthorId,
+       p.firstName AS AuthorFirstName,
+       p.lastName AS AuthorLastName,
+CASE r
+     WHEN null THEN false
+    ELSE true
+        END AS replyAuthorKnowsOriginalMessageAuthor
+ORDER BY commentCreationDate DESC, AuthorId
+
+
+
+
+

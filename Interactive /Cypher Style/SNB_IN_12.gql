@@ -1,0 +1,22 @@
+// Q12. Expert search\
+FROM LDBC_SNB
+MATCH (baseTagClass:TagClass)<-[:HAS_TYPE|IS_SUBCLASS_OF]{0,..}-(tag:Tag)
+WHERE tag.name = $tagClassName OR baseTagClass.name = $tagClassName
+RETURN collect(tag.id) as tags
+
+
+
+MATCH (:Person {id: $personId })-[:KNOWS]-(friend:Person)
+<-[:HAS_CREATOR]-(comment:Comment)-[:REPLY_OF]->(:Post)-[:HAS_TAG]->(tag:Tag)
+WHERE tag.id in tags
+RETURN
+    friend.id AS personId,
+    friend.firstName AS personFirstName,
+    friend.lastName AS personLastName,
+    COLLECT(DISTINCT tag.name) AS tagNames,
+    COUNT(DISTINCT comment) AS replyCount
+ORDER BY
+    replyCount DESC,
+    toInteger(personId) ASC
+LIMIT 20
+

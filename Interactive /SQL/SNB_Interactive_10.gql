@@ -1,0 +1,36 @@
+
+//  Query friend_VIEW 
+SELECT person,city,friend,datetime({f.birthday}) as birthday
+FROM LDBC_SNB
+    MATCH (p:Person {id: $personId})-[:KNOWS]-(friend){2,..}
+       (friend)-[:IS_LOCATED_IN]->(city:City)
+    OPTIONAL MATCH   (friend where friend <> person)-[:KNOWS]-(person)
+    WHERE  (birthday.month=$month AND birthday.day>=21) OR
+           (birthday.month=($month%12)+1 AND birthday.day<22)
+
+
+//  Query post_VIEW 
+SELECT friend,city,COLLECT(post) AS posts,person
+FROM LDBC_SNB
+OPTIONAL MATCH (friend)<-[:HAS_CREATOR]-(post:Post)
+
+
+//  Query postExtend_VIEW 
+SELECT city,size(posts) AS postCount,friend.id AS personId,
+       friend.firstName AS personFirstName,friend.lastName AS personLastName,
+       commonPostCount - (postCount - commonPostCount) AS commonInterestScore,
+       friend.gender AS personGender,city.name AS personCityName 
+FROM 
+WHERE EXIST{
+  SELECT AS commonPostCount
+  FROM LBC_SNB
+  MATCH
+  (p)-[:HAS_TAG]->()<-[:HAS_INTEREST]-(person))
+  
+   }
+ORDER BY commonInterestScore DESC
+        , personId ASC
+LIMIT 10
+
+
+

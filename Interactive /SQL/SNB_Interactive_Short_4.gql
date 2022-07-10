@@ -1,0 +1,5 @@
+SELECT
+    message.creationDate as messageCreationDate,
+    COALESCENCE (m.content, m.imageFile) as messageContent
+FROM LDBC_SNB
+     MATCH (message:Message {id:  $messageId })

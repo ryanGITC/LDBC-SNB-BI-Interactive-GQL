@@ -1,0 +1,22 @@
+
+FROM LDBC_SNB
+MATCH (P:Person {id: $personId })-[:KNOWS]-(f:Person)<-[:HAS_CREATOR]-(m:Message)
+    WHERE message.creationDate <= $maxDate
+CASE : 
+    m.content <> "" 
+    THEN 
+            result = coalesce(m.content,m.imageFile) 
+
+    ELSE   NULL
+            
+    RETURN
+        f.id AS personId,
+        f.firstName AS personFirstName,
+        f.lastName AS personLastName,
+        m.id AS postID,
+        result AS postOrCommentContent,
+        m.creationDate AS postDate
+    ORDER BY
+        postOrCommentContent DESC,
+        toInteger(postOrCommentId) ASC
+    LIMIT 20

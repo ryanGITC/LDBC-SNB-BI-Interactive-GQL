@@ -1,0 +1,10 @@
+//
+
+SELECT person1.id AS person1Id,person2.id AS person2Id,count(DISTINCT mutualFriend) AS mutualFriendCount
+FROM  LDBC_SNB
+MATCH (tag:Tag {name: $tag})<-[:HAS_INTEREST]-(person1:Person)-[:KNOWS]-(mutualFriend:Person)-[:HAS_INTEREST]->(tag)
+OPTIONAL MATCH (mutualFriend:Person)-[:KNOWS]-(person2:Person)
+WHERE person1 <> person2
+  AND NOT (person1)-[:KNOWS]-(person2)
+ORDER BY mutualFriendCount DESC, person1Id ASC, person2Id ASC
+LIMIT 20

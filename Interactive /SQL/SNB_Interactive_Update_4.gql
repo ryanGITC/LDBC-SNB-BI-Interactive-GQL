@@ -1,0 +1,12 @@
+
+
+SELECT $tagIds AS tagId
+FROM LDBC_SNB
+     MATCH (p:Person {id: $moderatorPersonId})
+     CREATE (f:Forum {id: $forumId, title: $forumTitle, creationDate: $creationDate})-[:HAS_MODERATOR]->(p)
+
+SELECT ...
+FROM ...
+MATCH (tag:Tag {id: tagId})
+CREATE (f)-[:HAS_TAG]->(tag)
+
