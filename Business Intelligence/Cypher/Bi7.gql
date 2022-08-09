@@ -1,13 +1,15 @@
-/*Translation Bi7 query*/
-FROM LDBC_SNB
-MATCH
-  (tag:Tag {name: $tag})<-[:HAS_TAG]-(m:Message),
-  (m)<-[:REPLY_OF]-(c:Comment)-[:HAS_TAG]->(rTag:Tag)
-    WHERE NOT (c)-[:HAS_TAG]->(tag)
-
-RETURN RelatedTag.name AS "relatedTag.name"
-       , count(*) AS count
- GROUP BY RelatedTag.name
+FROM BI
+MATCH  (tag:Tag {name:$tagname} )<-[:HAS_TAG]-(m:Message),
+       (m)<-[:REPLY_OF]-(c:Comment)-[:HAS_TAG]->(rTag:Tag)
+RETURN rTag.name AS  rTag_name,
+       count(*) AS count
+ GROUP BY  rTag_name
  ORDER BY count DESC
-          ,RelatedTag.name
- LIMIT 100
+          ,rTag_name
+LIMIT 100
+EXECEPT ALL
+FROM BI
+MATCH  (c1:Comment)~[:HAS_TAG]~(tag1:Tag) 
+Return *
+
+
