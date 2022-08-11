@@ -10,6 +10,6 @@ LIMIT 100
 EXECEPT ALL
 FROM BI
 MATCH  (c1:Comment)~[:HAS_TAG]~(tag1:Tag) 
-Return *
+Return rTag_name
 
 
