@@ -1,14 +1,16 @@
-
-FROM LDBC_SNB
-MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(p:Person)
-OPTIONAL MATCH (message)<-[likes:LIKES]-(:Person)
+FROM BI
+MATCH (tag:Tag {name: "Rumi"})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(p:Person)
+OPTIONAL MATCH (message)<-[lk:LIKES]-(:Person)
 OPTIONAL MATCH (message)<-[:REPLY_OF]-(reply:Comment)
-REUTRN CreatorPerson.id AS person.id
-     , count(DISTINCT Comment.Id)  AS replyCount
-     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
-     , count(DISTINCT Message.Id)  AS messageCount
-     ,1*messageCount + 2*replyCount + 10*likeCount AS score
+RETURN p.id as person_id,
+       SUM(reply) AS totalReplies,
+       SUM(lk) AS totalLikes,
+       count(message) AS messages,
+  1*messages + 2*totalReplies + 10*totalLikes AS score
+ORDER BY
+  score DESC,
+  person_id ASC
+LIMIT 100 
 
- GROUP BY CreatorPerson.id
- ORDER BY score DESC, CreatorPersonId
- LIMIT 100
+
+
