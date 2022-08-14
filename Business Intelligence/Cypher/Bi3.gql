@@ -2,12 +2,11 @@
 FROM BI
 MATCH  (:Country {country: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN] (person:Person)<-[:HAS_MODERATOR]-(f:FORUM)-[:CONTAINER_OF]->
   (post:Post)<-[:REPLY_OF]{0,}-(message:Message)-[:HAS_TAG]->(:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass})
-RETURN 
-f.id            AS f_id
-f.title         AS  f_title
-f.creationDate   AS  f_creationDate
-f.ModeratorPersonId AS person_id
- count(DISTINCT MessageThread.MessageId) AS messageCount
+RETURN f.id    AS f_id,
+       f.title  AS  f_title,
+       f.creationDate AS  f_creationDate,
+       f.ModeratorPersonId AS person_id,
+       count(DISTINCT MessageThread.MessageId) AS messageCount
 GROUP BY f_id
         ,f_title
         ,f_creationDate
