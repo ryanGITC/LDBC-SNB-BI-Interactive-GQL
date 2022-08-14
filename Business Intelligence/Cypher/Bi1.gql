@@ -1,4 +1,3 @@
-CREATE QUERY messageCount_VIEW AS {
 FROM BI
 MATCH (m:Message),(mc:Comment)
 WHERE message.creationDate < $datetime
