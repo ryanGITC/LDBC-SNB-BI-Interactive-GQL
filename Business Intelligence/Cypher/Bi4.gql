@@ -1,0 +1,16 @@
+FROM BI
+MATCH (country:Country)<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(person:Person)<-[:HAS_MEMBER]-(forum:Forum), 
+      (person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
+WHERE forum.creationDate > $date
+OPTIONAL MATCH (forum)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF]*-(message:Message)-[:HAS_CREATOR]->(person)
+WHERE topForum2 IN topForums // IN predicate under consensus
+RETURN
+  person.id AS personId,
+  person.firstName AS personFirstName,
+  person.lastName AS personLastName,
+  person.creationDate AS personCreationDate,
+  count(DISTINCT message) AS messageCount
+ORDER BY
+  messageCount DESC,
+  person.id ASC
+LIMIT 100
