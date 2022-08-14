@@ -2,7 +2,7 @@ FROM BI
 MATCH (tag:Tag {name: $tag})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
 OPTIONAL MATCH [:REPLY_OF]-(reply:Comment)->(message)<-[likes:LIKES]-(:Person),(message1)<-[:LIKES]-(person2:Person)
 RETURN   DISTINCT  person.creatorPersonId 
-         count(DISTINCT like) AS likerPerson
+         ,count(DISTINCT like) AS likerPerson
  ORDER BY authorityScore DESC,
         pl.posterPersonid ASC
  LIMIT 100
