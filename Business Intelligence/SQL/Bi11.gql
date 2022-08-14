@@ -1,21 +1,12 @@
 SELECT count(*) AS count 
-       ,person1
-       ,person2
-       ,person3
-FROM LDBC_SNB
-     MATCH (country:Country {name: $country}),
-           (person1:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country), 
-           (person2:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country),
-           (person3:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country), 
-           (person1)-[k1:KNOWS]-(person2)-[k2:KNOWS]-(person3)-[k3:KNOWS]-(a)
-WHERE a.id < b.id
-  AND b.id < c.id
-  AND $startDate <= k1.creationDate <= k1.creationDate
-  AND $startDate <= k2.creationDate
-  AND $startDate <= k3.creationDate
-
-
-
-
-
-
+FROM BI
+MATCH ANY ACYCLIC (country:Country {name: $country}),
+              (person1:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country), 
+              (person2:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country),
+              (person3:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country), 
+              (person1)-[k1:KNOWS]-(person2)-[k2:KNOWS]-(person3)-[k3:KNOWS]-(person1)
+WHERE person1.id  BETWEEN person2.id AND person1 
+      AND k1 creationDate BETWEEN $startDate AND $endDate
+      AND k2 creationDate BETWEEN $startDate AND $endDate
+      AND k2 creationDate BETWEEN $startDate AND $endDate
+RETURN count(*) AS count 

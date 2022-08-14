@@ -1,37 +1,24 @@
-// messageCount_VIEW
-Select count(message) AS totalMessageCount
-FROM LDBC_SNB
-    MATCH (message:Message)
+Select m.year as messageYear,
+       mc as isComment, 
+       lengthCategory,
+       count(message) AS messageCount, 
+       sum(message.length)/toFloat (count(message)) AS averageMessageLength, 
+       sum(length) AS sumMessageLength, 
+       messageCount / toFloat(totalMessageCountInt) AS percentageOfMessages
+FROM BI
+MATCH (m:Message),(mc:Comment)
 WHERE message.creationDate < $datetime
+AND  message.content IS NOT UNKNOWN  //Parser substitutes UNKNOWN instead of NULL
+CASE 
+WHEN m.length <  40 THEN 0 -- short
+     WHEN m.length <  80 THEN 1 
+     WHEN m.length < 160 THEN 2 
+     ELSE  3 
+   END AS lengthCategory
 
-//messagePrepView
-Select ParentMessageId IS NOT NULL AS isComment,
-       , CASE
-             WHEN length <  40 THEN 0 -- short
-             WHEN length <  80 THEN 1 -- one liner
-             WHEN length < 160 THEN 2 -- tweet
-             ELSE                   3 -- long
-           END AS lengthCategory
-         , length    
-From LDBC_SNB 
-     MATCH(message:message)
-WHERE  creationDate < :datetime
-AND content IS NOT NULL
-
-
-//final Query
-SELECT messageYear, isComment, lengthCategory,count(message) AS messageCount,
-sum(message.length)/toFloat (count(message)) AS averageMessageLength,
-sum(length) AS sumMessageLength,
-(messageCount / toFloat(totalMessageCountInt)) AS percentageOfMessages
-
-FROM  messagePrep_VIEW, messageCount_VIEW
-      MATCH(message:message)
-GROUP BY messageYear, 
+ GROUP BY messageYear, 
           isComment, 
           lengthCategory, 
  ORDER BY messageYear DESC, 
           isComment ASC,
           lengthCategory ASC
-
-
