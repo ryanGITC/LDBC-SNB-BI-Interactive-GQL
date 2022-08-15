@@ -1,8 +1,8 @@
 FROM BI
-MATCH (tag:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass}
+MATCH (tag:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass
 OPTIONAL MATCH (message1:Message)-[:HAS_TAG]->(tag)
           WHERE message1.creationDate BETWEEN $Date AND  $Date + 100
-OPTIONAL MATCH
+OPTIONAL MATCH (message2:Message)-[:HAS_TAG]->(tag)
           WHERE message2.creationDate BETWEEN $date+ 100})  AND message2.creationDateWHERE $d < $date + 200
 Return   tag.name as tag_name
         ,count(message1) AS countWindow1
@@ -13,3 +13,11 @@ ORDER BY difference DESC,
 LIMIT 100
 
 
+FROM BI
+MATCH (tag:Tag)-[:HAS_TYPE]->(:TagClass)
+RETURN *
+OPTIONAL MATCH (message1:Message)-[:HAS_TAG]->(tag)
+Return   tag.name as tag_name
+
+
+OPTIONAL MATCH (message2:Message)-[:HAS_TAG]->(tag)
