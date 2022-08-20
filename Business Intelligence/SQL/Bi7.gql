@@ -8,8 +8,5 @@ MATCH  (tag:Tag {name:$tagname} )<-[:HAS_TAG]-(m:Message),
  ORDER BY count DESC
           ,rTag_name
 LIMIT 100
-EXCEPT ALL
-SELECT tag1 as rTag_name
-FROM BI
-MATCH  (c1:Comment)~[:HAS_TAG]~(tag1:Tag) 
+
 
