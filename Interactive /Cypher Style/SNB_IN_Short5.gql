@@ -1,5 +1,5 @@
 // IS5. Creator of a message
-FROM LDBC_SNBI
+FROM INA
 MATCH (m:Message {id:  $messageId })-[:HAS_CREATOR]->(p1:Person)
 RETURN
     p1.id AS personId,

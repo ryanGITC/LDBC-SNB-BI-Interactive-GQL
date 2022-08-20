@@ -1,13 +1,7 @@
-
-Create Query personFriend_VIEW AS (
-FROM LDBC_SNB
+FROM INA
 MATCH (p1:Person {id: $personId })-[:KNOWS]-(p2:Person){1,2}
-WHERE not(person <> p2)
-RETURN DISTINCT friend
-)
-
-FROM LDBC_SNB,personFriend_VIEW
-MATCH (:Country {name: $countryName }) <-[:IS_LOCATED_IN] <- (friend) -[workAt:WORK_AT] -(company:Company)
+WHERE person <> p2 //
+MATCH (:Country{name: $countryName })<-[:IS_LOCATED_IN]-(friend)<-[workAt:WORK_AT]-(company:Company)
 WHERE workAt.workFrom < $workFromYear
 RETURN
         f.id AS personId,
@@ -20,5 +14,7 @@ ORDER BY
         toInteger(personId) ASC,
         organizationName DESC
 LIMIT 10
+
+
 
 

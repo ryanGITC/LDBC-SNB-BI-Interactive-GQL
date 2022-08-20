@@ -1,7 +1,4 @@
-// IS3. Friends of a person
-
-
-FROM LDBC_SNB
+FROM INA
 MATCH (n:Person {id: $personId })-[r:KNOWS]-(f:friend)
 RETURN
     f.id AS personId,
@@ -9,6 +6,5 @@ RETURN
     f.lastName AS lastName,
     r.creationDate AS friendshipDate
 ORDER BY
-    friendshipDate DESC,
-    CAST(personId AS INTEGER) ASC
-
+        friendshipDate DESC,
+        personId ASC

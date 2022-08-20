@@ -1,15 +1,8 @@
-
-CREATE Query friends_VIEW as (
-FROM LDBC_SNB
+FROM INA
 MATCH (p1:Person {id: $personId })-[:KNOWS]-(p2:Person){1,2}
-WHERE f<>p1
-RETURN  COLLECT (distinct f) as friends
-)
-
-
-FROM friends_VIEW
+WHERE f<>p1 // in GQl parser not necessary, we add distinct values
 MATCH (f) <-[:HAS_CREATOR]-(m:Message)
-    WHERE m.creationDate < $maxDate
+      WHERE m.creationDate < $maxDate
 RETURN
     f.id AS personId,
     f.firstName AS FirstName,

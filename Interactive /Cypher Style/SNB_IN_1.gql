@@ -1,14 +1,9 @@
-
-
-CREATE QUERY friend_VIEW1  AS ( 
-FROM LDBC_SNB
-MATCH (p:Person {id: $personId}) ~[:friend] ~ (Person {firstName: $firstName})
+FROM INA
+MATCH (p:Person{id: $personId})~[:friend]~(Person {firstName: $firstName})
 RETURN p 
       ,friend
-)
 
-CREATE QUERY  friend_VIEW2 AS (
-FROM LDBC_SNB, friend_VIEW1
+
 MATCH path = shortestPath((p)-[:KNOWS]-(f:friend)) {1,3}
 WHERE p.id == friend_VIEW1.p.id
 Return min(length(path)) AS distance

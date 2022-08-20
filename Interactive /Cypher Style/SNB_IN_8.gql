@@ -1,6 +1,4 @@
-
-
-FROM LDBC_SNB
+FROM INA
 MATCH (p1:Person {id: $personId})<-[:HAS_CREATOR]-(:Message)<-[:REPLY_OF]-(c:Comment)-[:HAS_CREATOR]->(p2:Person)
 RETURN
     p1.id AS personId,

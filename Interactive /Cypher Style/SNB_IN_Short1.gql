@@ -1,6 +1,4 @@
-// IS1. Profile of a person
-
-FROM LDBC_SNB
+FROM INA
 MATCH (p1:Person {id: $personId })-[:IS_LOCATED_IN]->(c:City)
 RETURN
     p1.firstName AS firstName,
