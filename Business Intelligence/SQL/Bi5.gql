@@ -1,0 +1,12 @@
+SELECT p.id as person_id,
+       SUM(reply) AS totalReplies,
+       SUM(lk) AS totalLikes,
+       count(message) AS messages,
+  1*messages + 2*totalReplies + 10*totalLikes AS score
+FROM BI
+MATCH (tag:Tag {name: "Rumi"})<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(p:Person)
+OPTIONAL MATCH (reply:Comment)-[:REPLY_OF]->(message)<-[lk:LIKES]-(:Person)
+ORDER BY
+  score DESC,
+  person_id ASC
+LIMIT 100
