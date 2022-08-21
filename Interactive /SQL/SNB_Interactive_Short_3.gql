@@ -1,8 +1,0 @@
-// IS3. Friends of a person
-SELECT f.id AS personId,f.firstName AS firstName,f.lastName AS lastName,r.creationDate AS friendshipDate
-FROM LDBC_SNB
-     MATCH (n:Person {id: $personId })-[r:KNOWS]-(f:friend)
-ORDER BY
-    friendshipDate DESC,
-    CAST(personId AS INTEGER) ASC
-

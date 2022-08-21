@@ -1,0 +1,4 @@
+SELECT p1.id AS personId,p1.firstName AS firstName,
+       p1.lastName AS lastName
+FROM INA
+MATCH (m:Message {id:  $messageId })-[:HAS_CREATOR]->(p1:Person)

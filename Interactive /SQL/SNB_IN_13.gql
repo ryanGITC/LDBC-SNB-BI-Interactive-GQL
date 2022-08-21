@@ -1,0 +1,4 @@
+SELECT p AS shortestPathLength
+FROM INA
+MATCH SHORTEST p = shortest((p1)-[:KNOWS]-(p2)){*}
+

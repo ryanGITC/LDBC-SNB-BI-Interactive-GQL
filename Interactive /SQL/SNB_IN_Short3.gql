@@ -1,0 +1,7 @@
+SELECT f.id AS personId,f.firstName AS firstName,
+       f.lastName AS lastName,r.creationDate AS friendshipDate
+FROM INA
+MATCH (n:Person {id: $personId })-[r:KNOWS]-(f:friend)
+ORDER BY
+        friendshipDate DESC,
+        personId ASC

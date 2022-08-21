@@ -1,0 +1,16 @@
+SELECT t.name as nametag,count(post) as countPost
+FROM INA
+MATCH (p:Person{id: $personId })~[:KNOWS]~{1,2}(f:friend)
+WHERE  p<>f
+MATCH (f)<-[:HAS_CREATOR]-(post:Post),
+        (post)-[:HAS_TAG]->(t1:Tag{name:$tagName}), //we can substitute tagID for name
+         (post)-[:HAS_TAG]->(t2:Tag)
+WHERE  t1 <> t2      
+ORDER BY
+    nametag DESC,
+    countPost ASC
+LIMIT 10
+
+
+  
+       

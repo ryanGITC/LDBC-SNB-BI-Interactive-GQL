@@ -1,0 +1,10 @@
+SELECT p1.id AS personId, p1.firstName AS personFirstName,
+       p1.lastName AS personLastName,c.creationDate AS commentCreationDate,
+       c.id AS commentId, c.content AS content
+FROM INA
+MATCH (p1:Person {id: $personId})<-[:HAS_CREATOR]-(:Message)<-[:REPLY_OF]-(c:Comment)-[:HAS_CREATOR]->(p2:Person)
+ORDER BY
+    commentCreationDate DESC,
+    commentId ASC
+LIMIT 20
+

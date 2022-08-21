@@ -1,3 +1,4 @@
+
 FROM INA
 MATCH (P:Person {id: $personId })-[:KNOWS]-(f:Person)<-[:HAS_CREATOR]-(m:Message)
  WHERE message.creationDate <= $maxDate

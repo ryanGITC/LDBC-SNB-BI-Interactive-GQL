@@ -1,0 +1,10 @@
+SELECT f.id AS personId,f.firstName AS personFirstName,f.lastName AS personLastName
+      ,m.id AS postID,coalesce(m.content,m.imageFile) as postOrCommentContent,
+        m.creationDate AS postDate
+FROM INA
+MATCH (P:Person {id: $personId })-[:KNOWS]-(f:Person)<-[:HAS_CREATOR]-(m:Message)
+ WHERE message.creationDate <= $maxDate
+ ORDER BY
+         postOrCommentContent DESC,
+        toInteger(postOrCommentId) ASC
+ LIMIT 20

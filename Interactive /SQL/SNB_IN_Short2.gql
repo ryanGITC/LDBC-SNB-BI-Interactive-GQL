@@ -1,0 +1,10 @@
+SELECT message, message.id AS messageId,message.creationDate AS messageCreationDate
+       ,coalesce(message.imageFile,message.content) AS messageContent
+       ,post.id AS postId,person.id AS personId,person.firstName AS FirstName,
+       ,person.lastName AS LastName
+FROM INA
+MATCH (:Person {id: $personId})<-[:HAS_CREATOR]-(:message)
+OPTIONAL MATCH (message)-[:REPLY_OF]->{0,0}(post:Post)-[:HAS_CREATOR]->(person)
+ORDER BY messageCreationDate DESC
+        ,messageId ASC
+

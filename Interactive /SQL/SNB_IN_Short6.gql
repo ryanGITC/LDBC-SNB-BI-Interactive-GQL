@@ -1,0 +1,8 @@
+SELECT f.id AS forumId
+      ,f.title AS forumTitle
+      ,p1.id AS moderatorId
+      ,p1.firstName AS FirstName
+      ,p1.lastName AS LastName
+FROM INA
+MATCH SHORTEST (m:Message {id: $messageId })-[:REPLY_OF]*->(p:Post)<-[:CONTAINER_OF]-(f:Forum)-[:HAS_MODERATOR]->(p1:Person)
+

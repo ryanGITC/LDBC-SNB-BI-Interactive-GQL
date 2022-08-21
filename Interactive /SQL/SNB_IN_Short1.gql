@@ -1,0 +1,8 @@
+SELECT p1.firstName AS firstName,
+       p1.lastName AS lastName,
+       p1.birthday AS birthday,p1.locationIP AS locationIP,
+       p1.browserUsed AS browserUsed
+       ,p1.id AS cityId,p1.gender AS gender,p1.creationDate AS creationDate
+FROM INA
+MATCH (p1:Person {id: $personId })-[:IS_LOCATED_IN]->(c:City)
+
