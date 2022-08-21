@@ -1,4 +1,3 @@
-
 FROM INA
 MATCH (p:Person { id: $personId })-[:KNOWS]-(friend:Person){1,1}
 WHERE person <> f
@@ -6,6 +5,7 @@ MATCH (friend)<-[membership:HAS_MEMBER]-(forum),
 MATCH (friend)<-[:HAS_CREATOR]-(:Post)<-[:CONTAINER_OF]-(:Forum)
 WHERE  membership.creationDate > $minDate
         AND    friend IN otherPersons // IN needs to be specified
+
 RETURN
     forum.title AS forumName,
     count(post) AS postCountpostCount

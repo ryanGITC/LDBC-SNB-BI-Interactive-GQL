@@ -1,5 +1,5 @@
-FROM IN
+FROM INA
 MATCH SHORTEST p = shortest((p1)-[:KNOWS]-(p2)){*}
 RETURN 
-    coalescence(p,'unknown') AS shortestPathLength
+    p AS shortestPathLength
 

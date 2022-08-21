@@ -1,20 +1,11 @@
-
-Create Query message_VIEW as (
+FROM INA
 MATCH (:Person {id: $personId})<-[:HAS_CREATOR]-(:message)
+OPTIONAL MATCH (message)-[:REPLY_OF]->{0,0}(post:Post)-[:HAS_CREATOR]->(person)
 Return
  message,
  message.id AS messageId,
  message.creationDate AS messageCreationDate
-ORDER BY messageCreationDate DESC, messageId ASC
-LIMIT 10
-)
-
-
-From message_VIEW, LDBC_SNB
-MATCH (message)-[:REPLY_OF]->(post:Post)-[:HAS_CREATOR]->(person)
-RETURN  messageId,
  ,coalesce(message.imageFile,message.content) AS messageContent
-,messageCreationDate
  ,post.id AS postId,
  ,person.id AS personId,
  ,person.firstName AS FirstName,

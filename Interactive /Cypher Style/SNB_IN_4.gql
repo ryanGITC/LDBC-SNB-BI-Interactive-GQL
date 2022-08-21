@@ -1,4 +1,4 @@
-FROM LDBC_SNB
+FROM INA
 MATCH (p:Person {id: $personId })-[:KNOWS]-(f:Person) <-[:HAS_CREATOR]-(post:Post)-[:HAS_TAG]->(tag)
 CASE $tag :
        WHEN $endDate > post.creationDate >= $startDate THEN 1

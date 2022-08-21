@@ -1,10 +1,9 @@
-// IS6. Forum of a message
 FROM INA
 MATCH SHORTEST (m:Message {id: $messageId })-[:REPLY_OF]*->(p:Post)<-[:CONTAINER_OF]-(f:Forum)-[:HAS_MODERATOR]->(p1:Person)
 RETURN
       f.id AS forumId,
       f.title AS forumTitle,
-      mod.id AS moderatorId,
-      mod.firstName AS FirstName,
-      mod.lastName AS LastName
+      p1.id AS moderatorId,
+      p1.firstName AS FirstName,
+      p1.lastName AS LastName
 

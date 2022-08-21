@@ -1,4 +1,3 @@
-// IS5. Creator of a message
 FROM INA
 MATCH (m:Message {id:  $messageId })-[:HAS_CREATOR]->(p1:Person)
 RETURN

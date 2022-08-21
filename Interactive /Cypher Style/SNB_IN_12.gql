@@ -2,7 +2,7 @@ FROM INA
 MATCH SHORTEST (baseTagClass:TagClass)<-[:HAS_TYPE|IS_SUBCLASS_OF]*-(tag1:Tag) //change accordingly
 WHERE tag.name = $tagClassName OR baseTagClass.name = $tagClassName
 MATCH (:Person {id: $personId })-[:KNOWS]-(friend:Person)<-[:HAS_CREATOR]-(comment:Comment)-[:REPLY_OF]->(:Post)-[:HAS_TAG]->(tag:Tag)
-WHERE tag.id !<> tag1.id //alternative for IN
+WHERE tag.id == tag1.id //alternative for IN
 RETURN
     friend.id AS personId,
     friend.firstName AS personFirstName,

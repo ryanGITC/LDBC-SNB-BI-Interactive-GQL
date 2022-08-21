@@ -1,4 +1,4 @@
-FROM LDBC_SNBI
+FROM INA
 MATCH (m:Message {id: $messageId })<-[:REPLY_OF]-(c:Comment)-[:HAS_CREATOR]->(p:Person)
 OPTIONAL MATCH (m)-[:HAS_CREATOR]->(p2:Person)-[r:KNOWS]-(p1)
 RETURN c.id AS commentId,
