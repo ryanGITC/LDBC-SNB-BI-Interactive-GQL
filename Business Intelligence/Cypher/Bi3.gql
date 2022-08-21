@@ -1,6 +1,6 @@
 /* type selector {0,} can be replaced with * */
 FROM BI
-MATCH  (:Country {country: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN] (person:Person)<-[:HAS_MODERATOR]-(f:FORUM)-[:CONTAINER_OF]->
+MATCH  (:Country {country: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN],(person:Person)<-[:HAS_MODERATOR]-(f:FORUM)-[:CONTAINER_OF]->
   (post:Post)<-[:REPLY_OF]{0,}-(message:Message)-[:HAS_TAG]->(:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass})
 RETURN f.id    AS f_id,
        f.title  AS  f_title,
