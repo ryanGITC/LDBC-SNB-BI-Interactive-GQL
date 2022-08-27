@@ -8,5 +8,5 @@ The Interactive and Business intelligence benchmark belong to the LDBC community
 In order to test the pattern match the GQL parser is utilized. Instruction on how to use the parser can be found in [https://github.com/OlofMorra/GQL-parser]
 Incase there is an error in running the parser on windows the following commands can be used:
 
-clean install: mvn clean install '-Dmaven.test.skip=true'
+clean install: mvn clean install '-Dmaven.test.skip=true' <br />
 running : mvn clean install '-Dmaven.test.skip=true'
